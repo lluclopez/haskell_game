@@ -5,9 +5,9 @@ type Posicio = (Int, Int)
 
 -- | Orientació del nucli
 data Orientacio
-  = Vertical      -- nucli dret (ocupa 1 cel·la o una columna)
-  | HoritzontalEW -- tombat est-oest (ocupa una fila)
-  | HoritzontalNS -- tombat nord-sud (ocupa una columna, >1 alçada)
+  = Vertical      -- de peu (1 cel·la)
+  | HoritzontalEW -- estirat d'est a oest (h cel·les en fila)
+  | HoritzontalNS -- estirat de nord a sud (h cel·les en columna)
   deriving (Eq, Ord, Show)
 
 -- | Nucli: posicio de la unitat "cap" i orientació

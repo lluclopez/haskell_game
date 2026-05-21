@@ -34,7 +34,7 @@ estatInicial t = Estat
 -- | Retorna totes les posicions que ocupa el nucli
 localitzaNucli :: Estat -> [Posicio]
 localitzaNucli (Estat t (Nucli (f, c) ori) _) = case ori of
-  Vertical      -> [(f + i, c) | i <- [0 .. h - 1]]
+  Vertical      -> [(f, c)]
   HoritzontalEW -> [(f, c + i) | i <- [0 .. h - 1]]
   HoritzontalNS -> [(f + i, c) | i <- [0 .. h - 1]]
   where h = alcada t
@@ -51,8 +51,17 @@ esPlataforma t (f, c)
     nc = if null (cel t) then 0 else length (head (cel t))
 
 -- | Totes les unitats del nucli estan sobre plataforma?
+--   El cap ha d'estar dins del tauler; el cos pot sobresortir.
 esSegur :: Estat -> Bool
-esSegur est = all (esPlataforma (tauler est)) (localitzaNucli est)
+esSegur est@(Estat t (Nucli (fc, cc) _) _) =
+  dinsTauler fc cc && noBuitDins
+  where
+    nf = length (cel t)
+    nc = if null (cel t) then 0 else length (head (cel t))
+    dinsTauler f c = f >= 0 && c >= 0 && f < nf && c < nc
+    noBuitDins =
+      all (\(f, c) -> if dinsTauler f c then cel t !! f !! c /= Buit else True)
+          (localitzaNucli est)
 
 -- | El nucli ha caigut al buit?
 succionat :: Estat -> Bool
@@ -63,11 +72,9 @@ estaDret :: Nucli -> Bool
 estaDret (Nucli _ Vertical) = True
 estaDret _                  = False
 
--- | El nucli ha arribat al reactor en posicio vertical?
+-- | El nucli ha arribat al reactor?
 connectatAlReactor :: Estat -> Bool
-connectatAlReactor est@(Estat t n _) =
-  estaDret n && nucliPos n == pFinal t
-  where nucliPos (Nucli p _) = p
+connectatAlReactor (Estat t (Nucli p ori) _) = ori == Vertical && p == pFinal t
 
 -- ---------------------------------------------------------------------------
 -- Maniobra i reinici — monada State
@@ -88,20 +95,20 @@ reinicia = modify $ \est ->
 -- | Calcula la nova posicio del nucli donada una direccio
 mouNucli :: Nucli -> Int -> Direccio -> Nucli
 mouNucli (Nucli (f, c) Vertical) h dir = case dir of
-  Nord -> Nucli (f - h, c) Vertical
-  Sud  -> Nucli (f + h, c) Vertical
+  Nord -> Nucli (f - h, c) HoritzontalNS
+  Sud  -> Nucli (f + 1, c) HoritzontalNS
   Oest -> Nucli (f, c - h) HoritzontalEW
   Est  -> Nucli (f, c + 1) HoritzontalEW
 mouNucli (Nucli (f, c) HoritzontalEW) h dir = case dir of
-  Nord -> Nucli (f - 1, c) Vertical
-  Sud  -> Nucli (f + 1, c) Vertical
-  Oest -> Nucli (f, c - 1) HoritzontalEW
-  Est  -> Nucli (f, c + h) HoritzontalEW
-mouNucli (Nucli (f, c) HoritzontalNS) h dir = case dir of
-  Nord -> Nucli (f - 1, c) HoritzontalNS
-  Sud  -> Nucli (f + h, c) HoritzontalNS
+  Nord -> Nucli (f - 1, c) HoritzontalEW
+  Sud  -> Nucli (f + 1, c) HoritzontalEW
   Oest -> Nucli (f, c - 1) Vertical
-  Est  -> Nucli (f, c + 1) Vertical
+  Est  -> Nucli (f, c + h) Vertical
+mouNucli (Nucli (f, c) HoritzontalNS) h dir = case dir of
+  Nord -> Nucli (f - 1, c) Vertical
+  Sud  -> Nucli (f + h, c) Vertical
+  Oest -> Nucli (f, c - 1) HoritzontalNS
+  Est  -> Nucli (f, c + 1) HoritzontalNS
 
 -- ---------------------------------------------------------------------------
 -- Solucio automatica: BFS
