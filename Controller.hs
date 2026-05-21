@@ -13,14 +13,14 @@ data Input
 
 parseInput :: String -> Input
 parseInput s = case map toLower (filter (/= '\n') s) of
-  "n" -> Moure Nord
+  "w" -> Moure Nord
+  "s" -> Moure Sud
+  "d" -> Moure Est
+  "a" -> Moure Oest
+  "n" -> Moure Nord    -- vi-keys alternatius
   "s" -> Moure Sud
   "e" -> Moure Est
   "o" -> Moure Oest
-  "k" -> Moure Nord    -- vi-keys alternatius
-  "j" -> Moure Sud
-  "l" -> Moure Est
-  "h" -> Moure Oest
   "m" -> CambiaMode
   "q" -> Sortir
   _   -> Invalid

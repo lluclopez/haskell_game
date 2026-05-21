@@ -59,7 +59,7 @@ bucleHuma est = do
   if connectatAlReactor est
     then putStrLn "Sistema energetic estabilitzat!"
     else do
-      putStr "Mou [n/s/e/o] | canvia mode [m] | surt [q]: "
+      putStr "Mou [w/a/s/d] | canvia mode [m] | surt [q]: "
       inp <- parseInput <$> getLine
       case inp of
         Sortir     -> putStrLn "Sortint..." >> exitSuccess
